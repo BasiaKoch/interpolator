@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiTrain } from "@/lib/api";
 
 export default function TrainPage() {
@@ -13,6 +13,14 @@ export default function TrainPage() {
   const [metrics, setMetrics] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Auto-fill temp_path from localStorage on component mount
+  useEffect(() => {
+    const savedTempPath = localStorage.getItem('dataset_temp_path');
+    if (savedTempPath) {
+      setTempPath(savedTempPath);
+    }
+  }, []);
 
   const handleTrain = async () => {
     // Validation
@@ -66,6 +74,8 @@ export default function TrainPage() {
       };
       const result = await apiTrain(tempPath, payload);
       setMetrics(result.metrics);
+      // Clear temp_path from localStorage after successful training
+      localStorage.removeItem('dataset_temp_path');
     } catch (e: any) {
       setErr(e.message || String(e));
     } finally {
@@ -89,10 +99,10 @@ export default function TrainPage() {
           type="text"
           value={tempPath}
           onChange={e => setTempPath(e.target.value)}
-          placeholder="Paste the temp_path from the upload step"
+          placeholder="Auto-filled from upload step"
         />
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-          Copy this from the Upload page after uploading your dataset
+          {tempPath ? '✓ Path loaded automatically from upload' : 'Upload a dataset first to auto-fill this field'}
         </p>
       </div>
 

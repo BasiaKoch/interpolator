@@ -44,6 +44,10 @@ export default function UploadPage() {
     try {
       const result = await apiUpload(selectedFile);
       setInfo(result);
+      // Save temp_path to localStorage for auto-fill in train page
+      if (result.temp_path) {
+        localStorage.setItem('dataset_temp_path', result.temp_path);
+      }
     } catch (e: any) {
       setErr(e.message || String(e));
     } finally {
@@ -101,8 +105,8 @@ export default function UploadPage() {
           <div className="card">
             <p><strong>Number of samples:</strong> {info.n_samples}</p>
             <p><strong>Temporary path:</strong> <code>{info.temp_path}</code></p>
-            <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-              Copy the temp_path above to use in the Train page.
+            <p style={{ marginTop: '1rem', color: 'var(--secondary-color)', fontWeight: 600 }}>
+              ✓ Dataset ready! The path has been automatically saved for training.
             </p>
           </div>
           <div style={{ marginTop: '1rem' }}>
