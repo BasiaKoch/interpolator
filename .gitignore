@@ -1,0 +1,17 @@
+# Python virtual environments
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS files
+.DS_Store
+
+# Node
+frontend/node_modules/
+
+# Build artifacts
+dist/
+build/
+
