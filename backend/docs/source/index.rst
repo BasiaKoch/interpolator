@@ -20,4 +20,4 @@ documentation for details.
    api
    performance
    tests
-   deploymento
+   deployment

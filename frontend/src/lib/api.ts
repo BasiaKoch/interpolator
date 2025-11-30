@@ -2,7 +2,8 @@
  * API client for communicating with the FastAPI backend
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Default to Docker deployment port (8001). For local dev without Docker, set NEXT_PUBLIC_API_URL=http://localhost:8000
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
 /**
  * Upload a .pkl dataset file

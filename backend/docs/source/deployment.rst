@@ -17,7 +17,7 @@ To start the full stack locally:
 
 .. code-block:: bash
 
-   ./run_local.sh
+   ./launch.sh
 
 This will:
 
@@ -27,24 +27,35 @@ This will:
 Accessing the application
 -------------------------
 
-Once the stack is running:
+**Docker deployment (default):**
+
+- Frontend UI: ``http://localhost:3001``
+- Backend API: ``http://localhost:8001``
+- API Docs: ``http://localhost:8001/docs``
+
+**Local development (without Docker):**
 
 - Frontend UI: ``http://localhost:3000``
-- Backend API: ``http://localhost:8000`` (or via Nginx on port 80/443 in production)
+- Backend API: ``http://localhost:8000``
 
 Uploading the dataset
 ---------------------
 
 From the frontend:
 
-1. Open ``http://localhost:3000/upload``.
-2. Select the provided ``.npz`` dataset file.
+1. Open ``http://localhost:3001/upload`` (Docker) or ``http://localhost:3000/upload`` (local dev).
+2. Select the provided ``.pkl`` dataset file.
 3. Click *Upload*. The backend stores the dataset and makes it available for training.
 
 From the API directly:
 
 .. code-block:: bash
 
+   # Docker deployment
+   curl -X POST "http://localhost:8001/upload" \
+        -F "file=@sample_dataset.pkl"
+
+   # Local development
    curl -X POST "http://localhost:8000/upload" \
-        -F "file=@dataset.npz"
+        -F "file=@sample_dataset.pkl"
 

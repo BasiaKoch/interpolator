@@ -89,6 +89,13 @@ UVICORN_PORT=8000
 ```
 
 ### Frontend (.env.local)
+
+**For Docker deployment (recommended):**
+```env
+# No .env.local needed - uses default http://localhost:8001
+```
+
+**For local development (without Docker):**
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 PORT=3000
