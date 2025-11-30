@@ -1,4 +1,5 @@
 pyproject.toml
+fivedreg/benchmark.py
 fivedreg/main.py
 fivedreg.egg-info/PKG-INFO
 fivedreg.egg-info/SOURCES.txt
@@ -14,3 +15,7 @@ fivedreg/models/__init__.py
 fivedreg/models/mlp.py
 fivedreg/utils/__init__.py
 fivedreg/utils/train.py
+tests/test_api.py
+tests/test_data_loader.py
+tests/test_model.py
+tests/test_utils.py

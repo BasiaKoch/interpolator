@@ -5,7 +5,6 @@ Summary: 5D dataset interpolator: data loading, training, inference
 Author-email: Your Name <you@example.com>
 License: MIT
 Requires-Python: >=3.11
-Description-Content-Type: text/markdown
 Requires-Dist: numpy>=1.26
 Requires-Dist: scikit-learn>=1.4
 Requires-Dist: torch>=2.2
