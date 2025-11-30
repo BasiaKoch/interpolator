@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "5D dataset interpolator: data loading, training, inference"
 requires-python = ">=3.11"
 license = {text = "MIT"}
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Barbara Koch", email = "bk489@cam.ac.uk" }]
 
 dependencies = [
   "numpy>=1.26",
@@ -23,7 +23,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.2","pytest-cov>=5.0","ruff>=0.6","mypy>=1.10","httpx>=0.27"]
-docs = ["sphinx>=7.3","sphinx-autodoc-typehints>=2.1","furo>=2024.8.6"]
+docs = ["sphinx>=7.3"]  # All extensions used (autodoc, napoleon, autosummary, viewcode) are built-in
 bench = ["memory-profiler>=0.61","psutil>=6.0"]
 
 [tool.setuptools]
