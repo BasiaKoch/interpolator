@@ -96,6 +96,6 @@ PORT=3000
 
 ---
 
-## 📖 Full Documentation
+## Full Documentation
 
 See [README.md](README.md) for comprehensive documentation.
