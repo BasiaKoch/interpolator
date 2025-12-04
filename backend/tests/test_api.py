@@ -133,12 +133,11 @@ class TestTrainEndpoint:
         try:
             # Train
             payload = {
-                "hidden": [32, 16],
-                "lr": 0.01,
-                "max_epochs": 3,
                 "batch_size": 32,
-                "patience": 5,
-                "scale_y": False
+                "max_epochs": 3,
+                "lr": 0.01,
+                "weight_decay": 1e-6,
+                "patience": 5
             }
             response = client.post(f"/train?temp_path={temp_path}", json=payload)
 
@@ -146,18 +145,18 @@ class TestTrainEndpoint:
             result = response.json()
             assert "metrics" in result
             assert "val_mse" in result["metrics"]
-            assert "val_r2" in result["metrics"]
+            assert "test_mse" in result["metrics"]
 
             # Check state was updated
             assert STATE.model is not None
-            assert STATE.x_scaler is not None
+            assert STATE.norm_stats is not None
             assert STATE.last_metrics is not None
         finally:
             # Temp file should be deleted by the endpoint
             assert not os.path.exists(temp_path)
 
     def test_train_with_y_scaling(self, client, reset_state, sample_dataset):
-        """Test training with y scaling"""
+        """Test training succeeds (note: new interpolator always normalizes y internally)"""
         X, y = sample_dataset
 
         with tempfile.NamedTemporaryFile(suffix=".npz", delete=False) as f:
@@ -166,18 +165,19 @@ class TestTrainEndpoint:
 
         try:
             payload = {
-                "hidden": [32],
-                "lr": 0.01,
-                "max_epochs": 3,
                 "batch_size": 32,
-                "patience": 5,
-                "scale_y": True
+                "max_epochs": 3,
+                "lr": 0.01,
+                "weight_decay": 1e-6,
+                "patience": 5
             }
             response = client.post(f"/train?temp_path={temp_path}", json=payload)
 
             assert response.status_code == 200
-            # Check that y_scaler is set
-            assert STATE.y_scaler is not None
+            # Check that norm_stats is set (includes y normalization)
+            assert STATE.norm_stats is not None
+            assert STATE.norm_stats.y_mean is not None
+            assert STATE.norm_stats.y_std is not None
         finally:
             pass  # File already deleted
 

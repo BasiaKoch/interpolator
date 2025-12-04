@@ -27,7 +27,7 @@ docs = ["sphinx>=7.3"]  # All extensions used (autodoc, napoleon, autosummary, v
 bench = ["memory-profiler>=0.61","psutil>=6.0"]
 
 [tool.setuptools]
-packages = ["fivedreg"]
+packages = ["fivedreg", "fivedreg.api", "fivedreg.data"]
 
 [tool.setuptools.package-data]
 fivedreg = ["*.py"]

@@ -15,8 +15,7 @@ import os
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 
-from fivedreg.models.mlp import MLPRegressor, MLPConfig
-from fivedreg.data.loader import split_and_standardize
+from fivedreg.interpolator import train_model, interpolate
 
 
 # ---------------------------------------------------------
@@ -49,43 +48,38 @@ def run_single(n_samples):
     """Run performance benchmark on dataset of size n_samples."""
     print(f"\n=== Benchmark: {n_samples:,} samples ===")
 
-    # Generate & normalize data
+    # Generate data
     X, y = make_dataset(n_samples)
-    ds = split_and_standardize(X, y, test_size=0.15, val_size=0.15)
-
-    # Configure model
-    config = MLPConfig(
-        hidden=(64, 32, 16),
-        lr=1e-3,
-        max_epochs=200,
-        batch_size=256,
-        patience=15,
-        seed=42
-    )
-    model = MLPRegressor(config)
 
     # --- Train ---
     mem_before = mem_mb()
     t0 = time.time()
-    model.fit(ds.X_train, ds.y_train, ds.X_val, ds.y_val)
+    model, norm_stats, (val_mse, test_mse) = train_model(
+        X, y,
+        batch_size=256,
+        max_epochs=200,
+        lr=1e-3,
+        weight_decay=1e-6,
+        patience=15,
+    )
     train_time = time.time() - t0
     mem_after = mem_mb()
 
     mem_train = mem_after - mem_before
 
-    # --- Predict ---
+    # --- Predict on a sample of test data ---
+    # Generate fresh test data
+    X_test, y_test = make_dataset(int(n_samples * 0.15), seed=99)
+
     mem_before_pred = mem_mb()
-    y_val_pred = model.predict(ds.X_val)
-    y_test_pred = model.predict(ds.X_test)
+    y_test_pred = interpolate(model, norm_stats, X_test)
     mem_after_pred = mem_mb()
 
     mem_pred = mem_after_pred - mem_before_pred
 
     # --- Metrics ---
-    val_mse = mean_squared_error(ds.y_val, y_val_pred)
-    val_r2 = r2_score(ds.y_val, y_val_pred)
-    test_mse = mean_squared_error(ds.y_test, y_test_pred)
-    test_r2 = r2_score(ds.y_test, y_test_pred)
+    test_mse_external = mean_squared_error(y_test, y_test_pred)
+    test_r2 = r2_score(y_test, y_test_pred)
 
     return {
         "samples": n_samples,
@@ -93,8 +87,8 @@ def run_single(n_samples):
         "memory_train_mb": mem_train,
         "memory_pred_mb": mem_pred,
         "val_mse": val_mse,
-        "val_r2": val_r2,
         "test_mse": test_mse,
+        "test_mse_external": test_mse_external,
         "test_r2": test_r2
     }
 

@@ -2,10 +2,9 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, conlist
-import numpy as np, joblib, tempfile, os
+import numpy as np, tempfile, os
 from fivedreg.data.loader import load_dataset_pkl
-from fivedreg.utils.train import train_from_arrays
-from fivedreg.models.mlp import MLPConfig
+from fivedreg.interpolator import train_model, interpolate, save_model
 from fivedreg.api.state import STATE
 
 app = FastAPI(title="5D Interpolator")
@@ -27,12 +26,11 @@ def root():
 def health(): return {"status": "ok"}
 
 class TrainRequest(BaseModel):
-    hidden: list[int] = [128,64,32]
-    lr: float = 1e-3
-    max_epochs: int = 150
     batch_size: int = 256
-    patience: int = 15
-    scale_y: bool = False
+    max_epochs: int = 200
+    lr: float = 5e-3
+    weight_decay: float = 1e-6
+    patience: int = 20
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
@@ -78,31 +76,41 @@ async def train(req: TrainRequest, temp_path: str):
             pass  # Don't fail if cleanup fails
 
     try:
-        model, ds, metrics = train_from_arrays(
-            X, y, MLPConfig(tuple(req.hidden), req.lr, req.max_epochs, req.batch_size, req.patience),
-            scale_y=req.scale_y
+        model, norm_stats, (val_mse, test_mse) = train_model(
+            X, y,
+            batch_size=req.batch_size,
+            max_epochs=req.max_epochs,
+            lr=req.lr,
+            weight_decay=req.weight_decay,
+            patience=req.patience,
         )
     except Exception as e:
         raise HTTPException(500, f"Training failed: {str(e)}")
 
-    STATE.model, STATE.x_scaler, STATE.y_scaler, STATE.last_metrics = model, ds.x_scaler, ds.y_scaler, metrics
+    # Store in state
+    STATE.model = model
+    STATE.norm_stats = norm_stats
+    STATE.last_metrics = {
+        "val_mse": float(val_mse),
+        "test_mse": float(test_mse),
+    }
 
     # persist artifacts
     try:
         os.makedirs("artifacts", exist_ok=True)
-        joblib.dump([model, ds.x_scaler, ds.y_scaler, metrics], "artifacts/latest.joblib")
+        save_model(model, norm_stats, "artifacts/latest.pkl")
     except Exception as e:
         # Don't fail training if artifact save fails
         pass
 
-    return {"metrics": metrics}
+    return {"metrics": STATE.last_metrics}
 
 class PredictRequest(BaseModel):
     X: list[conlist(float, min_length=5, max_length=5)]
 
 @app.post("/predict")
 def predict(req: PredictRequest):
-    if STATE.model is None:
+    if STATE.model is None or STATE.norm_stats is None:
         raise HTTPException(400, "No model trained yet")
 
     if not req.X:
@@ -122,10 +130,7 @@ def predict(req: PredictRequest):
         raise HTTPException(400, f"Expected 5 features, got {X.shape[1]}")
 
     try:
-        X = STATE.x_scaler.transform(X)
-        y = STATE.model.predict(X)
-        if STATE.y_scaler is not None:
-            y = STATE.y_scaler.inverse_transform(y.reshape(-1, 1)).ravel()
+        y = interpolate(STATE.model, STATE.norm_stats, X)
         return {"y": y.tolist()}
     except Exception as e:
         raise HTTPException(500, f"Prediction failed: {str(e)}")

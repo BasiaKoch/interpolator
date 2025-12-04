@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: fivedreg
 Version: 0.1.0
 Summary: 5D dataset interpolator: data loading, training, inference
-Author-email: Your Name <you@example.com>
+Author-email: Barbara Koch <bk489@cam.ac.uk>
 License: MIT
 Requires-Python: >=3.11
 Requires-Dist: numpy>=1.26
@@ -21,8 +21,6 @@ Requires-Dist: mypy>=1.10; extra == "dev"
 Requires-Dist: httpx>=0.27; extra == "dev"
 Provides-Extra: docs
 Requires-Dist: sphinx>=7.3; extra == "docs"
-Requires-Dist: sphinx-autodoc-typehints>=2.1; extra == "docs"
-Requires-Dist: furo>=2024.8.6; extra == "docs"
 Provides-Extra: bench
 Requires-Dist: memory-profiler>=0.61; extra == "bench"
 Requires-Dist: psutil>=6.0; extra == "bench"

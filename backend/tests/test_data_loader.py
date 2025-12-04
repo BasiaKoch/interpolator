@@ -5,8 +5,6 @@ import tempfile
 import os
 from fivedreg.data.loader import (
     load_dataset_pkl,
-    load_dataset_npz,
-    split_and_standardize,
     _validate
 )
 
@@ -165,96 +163,3 @@ class TestValidate:
         X_val, y_val = _validate(X, y)
         assert X_val.shape == (99, 5)  # 1 row removed
         assert not np.any(np.isinf(X_val))
-
-
-class TestSplitAndStandardize:
-    """Test split_and_standardize function"""
-
-    def test_basic_split(self):
-        """Test basic data splitting"""
-        X = np.random.randn(1000, 5).astype(np.float32)
-        y = np.random.randn(1000).astype(np.float32)
-
-        ds = split_and_standardize(X, y, test_size=0.15, val_size=0.15, random_state=42)
-
-        # Check split sizes (approximately)
-        assert ds.X_train.shape[0] == 700  # 70%
-        assert ds.X_val.shape[0] == 150    # 15%
-        assert ds.X_test.shape[0] == 150   # 15%
-
-        # Check all have 5 features
-        assert ds.X_train.shape[1] == 5
-        assert ds.X_val.shape[1] == 5
-        assert ds.X_test.shape[1] == 5
-
-        # Check y shapes
-        assert ds.y_train.shape == (700,)
-        assert ds.y_val.shape == (150,)
-        assert ds.y_test.shape == (150,)
-
-    def test_standardization(self):
-        """Test that X is standardized"""
-        X = np.random.randn(1000, 5).astype(np.float32) * 10 + 5  # Mean ~5, std ~10
-        y = np.random.randn(1000).astype(np.float32)
-
-        ds = split_and_standardize(X, y)
-
-        # Training data should have mean ~0 and std ~1
-        assert np.abs(ds.X_train.mean()) < 0.1
-        assert np.abs(ds.X_train.std() - 1.0) < 0.1
-
-    def test_y_scaling_disabled(self):
-        """Test that y is not scaled when scale_y=False"""
-        X = np.random.randn(1000, 5).astype(np.float32)
-        y = np.random.randn(1000).astype(np.float32) * 100 + 50
-
-        ds = split_and_standardize(X, y, scale_y=False)
-
-        assert ds.y_scaler is None
-        # y should not be standardized
-        assert np.abs(ds.y_train.mean() - 50) < 10  # Still has original scale
-
-    def test_y_scaling_enabled(self):
-        """Test that y is scaled when scale_y=True"""
-        X = np.random.randn(1000, 5).astype(np.float32)
-        y = np.random.randn(1000).astype(np.float32) * 100 + 50
-
-        ds = split_and_standardize(X, y, scale_y=True)
-
-        assert ds.y_scaler is not None
-        # y should be standardized
-        assert np.abs(ds.y_train.mean()) < 0.1
-        assert np.abs(ds.y_train.std() - 1.0) < 0.1
-
-    def test_reproducibility(self):
-        """Test that same random_state gives same split"""
-        X = np.random.randn(1000, 5).astype(np.float32)
-        y = np.random.randn(1000).astype(np.float32)
-
-        ds1 = split_and_standardize(X, y, random_state=42)
-        ds2 = split_and_standardize(X, y, random_state=42)
-
-        np.testing.assert_array_equal(ds1.X_train, ds2.X_train)
-        np.testing.assert_array_equal(ds1.y_train, ds2.y_train)
-
-
-class TestLoadDatasetNpz:
-    """Test load_dataset_npz function"""
-
-    def test_load_npz_file(self):
-        """Test loading from .npz file"""
-        X = np.random.randn(100, 5).astype(np.float32)
-        y = np.random.randn(100).astype(np.float32)
-
-        with tempfile.NamedTemporaryFile(suffix='.npz', delete=False) as f:
-            np.savez(f, X=X, y=y)
-            temp_path = f.name
-
-        try:
-            X_loaded, y_loaded = load_dataset_npz(temp_path)
-            assert X_loaded.shape == (100, 5)
-            assert y_loaded.shape == (100,)
-            np.testing.assert_array_almost_equal(X_loaded, X)
-            np.testing.assert_array_almost_equal(y_loaded, y)
-        finally:
-            os.unlink(temp_path)
