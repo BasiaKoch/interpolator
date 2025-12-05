@@ -18,7 +18,7 @@ command_exists() {
 }
 
 # Check prerequisites
-echo "🔍 Checking prerequisites..."
+echo " Checking prerequisites..."
 echo ""
 
 # Check Docker and Docker Compose

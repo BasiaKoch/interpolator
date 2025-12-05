@@ -12,6 +12,10 @@ Welcome! This is a full-stack machine learning application for training neural n
   - [Docker Setup (Recommended)](#docker-setup-recommended)
   - [Local Development Setup](#local-development-setup)
 - [Usage](#usage)
+  - [Upload Dataset](#1-upload-dataset)
+  - [Train Model](#2-train-model)
+  - [Make Predictions](#3-make-predictions)
+  - [Using the Package Programmatically](#4-using-the-package-programmatically)
 - [API Documentation](#api-documentation)
 - [Testing](#testing)
 - [Project Structure](#project-structure)
@@ -68,7 +72,7 @@ This application provides an end-to-end machine learning workflow:
 ┌────────────────────────▼────────────────────────────────────┐
 │                         Backend                             │
 │                   (FastAPI + PyTorch)                       │
-│                       Port: 8000                            │
+│                    Port: 8000/8001                          │
 │                                                             │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐      │
 │  │   /upload   │  │    /train    │  │   /predict   │      │
@@ -147,25 +151,61 @@ NEXT_PUBLIC_API_URL=http://backend:8000
 
 ### Docker Setup (Recommended)
 
-#### 1. Clone the Repository
+The easiest way to get started is using the automated launch script:
+
+#### Quick Start
+
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd C1_coursework
+
+# Launch the application
+./launch.sh
 ```
 
-#### 2. Build and Start Services
+**That's it!** The script will:
+- ✓ Check Docker and Docker Compose are installed
+- ✓ Build both frontend and backend images
+- ✓ Start all services with health checks
+- ✓ Wait for services to be ready
+- ✓ Display access URLs and helpful information
+- ✓ Stream logs from both containers
+
+**Access the application:**
+- Frontend: `http://localhost:3001`
+- Backend API: `http://localhost:8001`
+- API Docs: `http://localhost:8001/docs`
+
+**To stop:** Press `Ctrl+C` (containers keep running) or run `docker-compose down`
+
+---
+
+#### Alternative: Manual Docker Compose
+
+If you prefer manual control:
+
 ```bash
+# Build and start
 docker-compose up --build
+
+# Or run in background
+docker-compose up --build -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services (preserves volumes)
+docker-compose down
+
+# Stop and remove everything (including trained models!)
+docker-compose down -v
 ```
 
-This will:
-- Build both frontend and backend Docker images
-- Start the backend on `http://localhost:8001`
-- Start the frontend on `http://localhost:3001`
-- Create a persistent volume for trained models
-- Set up health checks for both services
+---
 
-#### 3. Verify Services
+#### Verify Services
+
 ```bash
 # Check backend health
 curl http://localhost:8001/health
@@ -173,17 +213,8 @@ curl http://localhost:8001/health
 # Check frontend
 curl http://localhost:3001
 
-# View logs
-docker-compose logs -f
-```
-
-#### 4. Stop Services
-```bash
-# Stop containers (preserves volumes)
-docker-compose down
-
-# Stop and remove volumes (deletes trained models)
-docker-compose down -v
+# View running containers
+docker ps
 ```
 
 ---
@@ -332,6 +363,101 @@ Feature 5: -1.2
 
 Result: ŷ = 3.456789
 ```
+
+---
+
+### 4. Using the Package Programmatically
+
+You can also use the `fivedreg` package directly in Python scripts or Jupyter notebooks.
+
+#### Installation
+
+```bash
+cd backend
+source .venv/bin/activate
+pip install -e .
+```
+
+#### Basic Usage
+
+```python
+import numpy as np
+from fivedreg.interpolator import train_model, interpolate, synthetic_5d
+
+# Generate synthetic data
+X, y = synthetic_5d(n=1000, seed=42)
+
+# Train model
+model, stats, (val_mse, test_mse) = train_model(
+    X, y,
+    batch_size=256,
+    max_epochs=50,
+    patience=10
+)
+
+print(f"Validation MSE: {val_mse:.6f}")
+print(f"Test MSE: {test_mse:.6f}")
+
+# Make predictions
+X_new = np.array([[0.5, -0.3, 0.8, -0.2, 0.1]])
+predictions = interpolate(model, stats, X_new)
+print(f"Prediction: {predictions[0]:.6f}")
+```
+
+#### Save and Load Models
+
+```python
+from fivedreg.interpolator import save_model, load_model
+
+# Save model
+save_model(model, stats, "my_model.pkl")
+
+# Load model
+loaded_model, loaded_stats = load_model("my_model.pkl")
+
+# Use loaded model
+predictions = interpolate(loaded_model, loaded_stats, X_new)
+```
+
+#### Available Functions
+
+Import from `fivedreg.interpolator`:
+
+```python
+from fivedreg.interpolator import (
+    train_model,      # Train a model
+    interpolate,      # Make predictions
+    save_model,       # Save model to file
+    load_model,       # Load model from file
+    synthetic_5d,     # Generate synthetic data
+    MLP,              # Model class
+    NormStats,        # Normalization statistics class
+)
+```
+
+#### Data Loading
+
+```python
+from fivedreg.data.loader import load_dataset_pkl
+
+# Load dataset from pickle file
+X, y = load_dataset_pkl("dataset.pkl")
+```
+
+#### Using with Jupyter
+
+Install Jupyter support:
+```bash
+pip install jupyterlab ipykernel
+python -m ipykernel install --user --name c1_cw --display-name "c1_cw"
+```
+
+Start Jupyter Lab:
+```bash
+jupyter lab
+```
+
+Select the "c1_cw" kernel and you'll have access to all `fivedreg` functions.
 
 ---
 
@@ -622,8 +748,79 @@ docker-compose up -d --scale backend=3
 
 ---
 
-4. **API documentation:**
-   Visit `http://localhost:8001/docs` for interactive API testing
+## Troubleshooting
+
+### Backend won't start
+
+**Check logs:**
+```bash
+docker-compose logs backend
+```
+
+**Common issues:**
+- Port 8001 already in use: Change port in `docker-compose.yml` (e.g., `"8002:8000"`)
+- Memory issues: Ensure Docker has at least 4GB RAM allocated
+
+### Frontend can't connect to backend
+
+**Verify backend is running:**
+```bash
+curl http://localhost:8001/health
+```
+
+**If using local development** (not Docker):
+- Check `.env.local` has `NEXT_PUBLIC_API_URL=http://localhost:8000`
+- Backend must be running on port 8000
+
+**If using Docker:**
+- Frontend should use `NEXT_PUBLIC_API_URL=http://backend:8000` (set in docker-compose.yml)
+- Both containers must be on the same network
+
+### Upload fails
+
+**File format:**
+- Must be `.pkl` file
+- Must contain `(X, y)` tuple or `{'X': ..., 'y': ...}` dict
+- X must have exactly 5 features
+- Maximum size: 50MB
+
+### Training fails
+
+**Common causes:**
+- Invalid temp_path from upload step
+- Insufficient memory (increase Docker memory limit)
+- Invalid hyperparameters (check ranges in Usage section)
+
+### Docker build is slow
+
+**First build** takes 5-10 minutes (downloading dependencies)
+
+**Subsequent builds** should be fast (~10-30 seconds) due to layer caching
+
+**To speed up:**
+```bash
+# Remove old images
+docker system prune -a
+
+# Rebuild from scratch
+docker-compose build --no-cache
+```
+
+### View detailed logs
+
+```bash
+# All logs
+./scripts/docker-logs.sh
+
+# Backend only
+docker-compose logs -f backend
+
+# Frontend only
+docker-compose logs -f frontend
+
+# Last 100 lines
+docker-compose logs --tail=100
+```
 
 ---
 

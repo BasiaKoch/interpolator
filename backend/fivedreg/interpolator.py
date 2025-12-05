@@ -306,14 +306,6 @@ def generate_synthetic_pkl(
     """
     Generate synthetic 5D data and save to pickle file.
 
-    Args:
-        n: Number of data points to generate
-        seed: Random seed for reproducibility
-        workdir: Directory to save the pickle file
-        filename: Name of the pickle file
-
-    Returns:
-        str: Path to the saved pickle file
     """
     os.makedirs(workdir, exist_ok=True)
     filepath = os.path.join(workdir, filename)
