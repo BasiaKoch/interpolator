@@ -129,8 +129,13 @@ sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Clone repository
-git clone <repository-url>
-cd C1_coursework
+# SSH
+git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
+cd bk489
+
+# OR HTTPS
+git clone https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
+cd bk489
 
 # Deploy
 docker-compose -f docker-compose.prod.yml up -d

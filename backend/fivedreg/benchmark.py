@@ -12,6 +12,7 @@ import json
 import time
 import psutil
 import os
+import gc
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 
@@ -52,6 +53,7 @@ def run_single(n_samples):
     X, y = make_dataset(n_samples)
 
     # --- Train ---
+    gc.collect()  # Force garbage collection for clean memory measurement
     mem_before = mem_mb()
     t0 = time.time()
     model, norm_stats, (val_mse, test_mse) = train_model(
@@ -63,19 +65,22 @@ def run_single(n_samples):
         patience=15,
     )
     train_time = time.time() - t0
+    gc.collect()  # Force garbage collection before measuring final memory
     mem_after = mem_mb()
 
-    mem_train = mem_after - mem_before
+    mem_train = max(0, mem_after - mem_before)  # Ensure non-negative
 
     # --- Predict on a sample of test data ---
     # Generate fresh test data
     X_test, y_test = make_dataset(int(n_samples * 0.15), seed=99)
 
+    gc.collect()  # Clean memory before prediction measurement
     mem_before_pred = mem_mb()
     y_test_pred = interpolate(model, norm_stats, X_test)
+    gc.collect()
     mem_after_pred = mem_mb()
 
-    mem_pred = mem_after_pred - mem_before_pred
+    mem_pred = max(0, mem_after_pred - mem_before_pred)  # Ensure non-negative
 
     # --- Metrics ---
     test_mse_external = mean_squared_error(y_test, y_test_pred)

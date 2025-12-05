@@ -1,0 +1,100 @@
+{
+  "profiling_stats": {
+    "operations": [
+      {
+        "name": "ProfilerStep*",
+        "cpu_time_ms": 11.403217,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 3
+      },
+      {
+        "name": "enumerate(DataLoader)#_SingleProcessDataLoaderIter.__next__",
+        "cpu_time_ms": 5.8812120000000006,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 3
+      },
+      {
+        "name": "Optimizer.step#AdamW.step",
+        "cpu_time_ms": 1.8352799999999998,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 3
+      },
+      {
+        "name": "aten::select",
+        "cpu_time_ms": 1.6958249999999981,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 1536
+      },
+      {
+        "name": "aten::linear",
+        "cpu_time_ms": 0.9881180000000022,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 12
+      },
+      {
+        "name": "aten::mse_loss",
+        "cpu_time_ms": 0.4413729999999987,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 3
+      },
+      {
+        "name": "aten::as_strided",
+        "cpu_time_ms": 0.40520099999999204,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 1608
+      },
+      {
+        "name": "aten::addmm",
+        "cpu_time_ms": 0.3438750000000018,
+        "cuda_time_ms": 0,
+        "flops": 13172736,
+        "calls": 12
+      },
+      {
+        "name": "autograd::engine::evaluate_function: AddmmBackward0",
+        "cpu_time_ms": 0.32362300000000144,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 12
+      },
+      {
+        "name": "aten::t",
+        "cpu_time_ms": 0.2964539999999997,
+        "cuda_time_ms": 0,
+        "flops": 0,
+        "calls": 57
+      }
+    ],
+    "total_cpu_time_ms": 23.614177999999995,
+    "total_cuda_time_ms": 0,
+    "total_flops": 13172736,
+    "memory_stats": {}
+  },
+  "bottleneck_analysis": {
+    "slow_operations": [
+      {
+        "name": "ProfilerStep*",
+        "time_ms": 11.403217,
+        "percentage": 48.289705447295276
+      },
+      {
+        "name": "enumerate(DataLoader)#_SingleProcessDataLoaderIter.__next__",
+        "time_ms": 5.8812120000000006,
+        "percentage": 24.9054275782964
+      }
+    ],
+    "memory_intensive": [],
+    "recommendations": [
+      "Consider optimizing slow operations or using GPU acceleration",
+      "Consider increasing num_workers in DataLoader or using pin_memory=True"
+    ]
+  },
+  "trace_location": "/Users/basiakoch/bk489/C1_coursework/backend/fivedreg/profiler_trace"
+}

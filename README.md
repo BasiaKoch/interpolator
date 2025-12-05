@@ -156,9 +156,13 @@ The easiest way to get started is using the automated launch script:
 #### Quick Start
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd C1_coursework
+# Clone the repository (SSH)
+git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
+cd bk489
+
+# OR clone with HTTPS
+# git clone https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
+# cd bk489
 
 # Launch the application
 ./launch.sh

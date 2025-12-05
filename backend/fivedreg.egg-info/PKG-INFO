@@ -24,3 +24,4 @@ Requires-Dist: sphinx>=7.3; extra == "docs"
 Provides-Extra: bench
 Requires-Dist: memory-profiler>=0.61; extra == "bench"
 Requires-Dist: psutil>=6.0; extra == "bench"
+Requires-Dist: matplotlib>=3.8; extra == "bench"

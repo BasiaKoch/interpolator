@@ -4,9 +4,22 @@ Usage Guide
 Installation
 ------------
 
+**Clone the repository:**
+
 .. code-block:: bash
 
-   git clone <your-gitlab-url>
+   # SSH (if you have SSH keys set up)
+   git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
+   cd bk489
+
+   # OR HTTPS (works with username/password)
+   git clone https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
+   cd bk489
+
+**Install backend package:**
+
+.. code-block:: bash
+
    cd backend
    pip install -e ".[dev]"
 

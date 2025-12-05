@@ -32,6 +32,12 @@ Collection of helper scripts for development, testing, and deployment.
   ```
   Runs line-by-line memory profiling and cProfile analysis.
 
+- **`run-profiling.sh`** - PyTorch profiling with visualization
+  ```bash
+  ./scripts/run-profiling.sh
+  ```
+  Runs PyTorch profiler to analyze training bottlenecks, measures FLOPs, memory usage, and operation times. Generates visualization plots and TensorBoard traces.
+
 ### Documentation
 
 - **`build-docs.sh`** - Build Sphinx documentation
@@ -78,6 +84,9 @@ cd frontend && npm run dev          # Frontend
 
 # Benchmark performance
 ./scripts/run-benchmark.sh
+
+# Profile training (PyTorch profiler)
+./scripts/run-profiling.sh
 ```
 
 ## Script Locations
