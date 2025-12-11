@@ -76,7 +76,7 @@ async def train(req: TrainRequest, temp_path: str):
             pass  # Don't fail if cleanup fails
 
     try:
-        model, norm_stats, (val_mse, test_mse) = train_model(
+        model, norm_stats, (val_mse, val_r2, test_mse, test_r2) = train_model(
             X, y,
             batch_size=req.batch_size,
             max_epochs=req.max_epochs,
@@ -92,7 +92,9 @@ async def train(req: TrainRequest, temp_path: str):
     STATE.norm_stats = norm_stats
     STATE.last_metrics = {
         "val_mse": float(val_mse),
+        "val_r2": float(val_r2),
         "test_mse": float(test_mse),
+        "test_r2": float(test_r2),
     }
 
     # persist artifacts

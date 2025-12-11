@@ -145,7 +145,9 @@ class TestTrainEndpoint:
             result = response.json()
             assert "metrics" in result
             assert "val_mse" in result["metrics"]
+            assert "val_r2" in result["metrics"]
             assert "test_mse" in result["metrics"]
+            assert "test_r2" in result["metrics"]
 
             # Check state was updated
             assert STATE.model is not None

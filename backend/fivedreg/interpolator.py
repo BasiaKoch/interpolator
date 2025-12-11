@@ -97,7 +97,7 @@ def train_model(
     lr: float = 5e-3,
     weight_decay: float = 1e-6,
     patience: int = 20,
-) -> Tuple[MLP, NormStats, Tuple[float, float]]:
+) -> Tuple[MLP, NormStats, Tuple[float, float, float, float]]:
     print("=" * 60)
     print("🚀 USING NEW INTERPOLATOR.PY CODE")
     print("=" * 60)
@@ -161,6 +161,8 @@ def train_model(
         model.eval()
         mse = 0.0
         n = 0
+        val_preds = []
+        val_targets = []
         with torch.no_grad():
             for xb, yb in val_loader:
                 xb, yb = xb.to(device), yb.to(device)
@@ -169,6 +171,8 @@ def train_model(
                     pred, yb, reduction="sum"
                 ).item()
                 n += xb.size(0)
+                val_preds.append(pred.cpu())
+                val_targets.append(yb.cpu())
         val_loss = mse / n
 
         if val_loss < best_val - 1e-6:
@@ -197,8 +201,40 @@ def train_model(
     if best_state is not None:
         model.load_state_dict(best_state)
 
+    # Calculate validation R² with best model
+    model.eval()
+    val_preds_final = []
+    val_targets_final = []
+    val_mse_final = 0.0
+    n_val = 0
+    with torch.no_grad():
+        for xb, yb in val_loader:
+            xb, yb = xb.to(device), yb.to(device)
+            pred = model(xb)
+            val_mse_final += nn.functional.mse_loss(
+                pred, yb, reduction="sum"
+            ).item()
+            n_val += xb.size(0)
+            val_preds_final.append(pred.cpu())
+            val_targets_final.append(yb.cpu())
+
+    val_mse_final = val_mse_final / n_val
+    val_preds_concat = torch.cat(val_preds_final, dim=0).squeeze().numpy()
+    val_targets_concat = torch.cat(val_targets_final, dim=0).squeeze().numpy()
+
+    # Denormalize for R² calculation (in original units)
+    val_preds_orig = invert_y_norm(val_preds_concat, stats)
+    val_targets_orig = invert_y_norm(val_targets_concat, stats)
+
+    # Calculate R² manually: 1 - (SS_res / SS_tot)
+    ss_res = np.sum((val_targets_orig - val_preds_orig) ** 2)
+    ss_tot = np.sum((val_targets_orig - np.mean(val_targets_orig)) ** 2)
+    val_r2 = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
+
     # Evaluate on test set (still in normalised units)
     model.eval()
+    test_preds = []
+    test_targets = []
     mse = 0.0
     n = 0
     with torch.no_grad():
@@ -209,12 +245,27 @@ def train_model(
                 pred, yb, reduction="sum"
             ).item()
             n += xb.size(0)
+            test_preds.append(pred.cpu())
+            test_targets.append(yb.cpu())
 
     test_mse = mse / n
     test_rmse = math.sqrt(test_mse)
-    print(f"Test RMSE (normalized target units): {test_rmse:.5f}")
 
-    return model.cpu(), stats, (best_val, test_mse)
+    # Calculate test R² (in original units)
+    test_preds_concat = torch.cat(test_preds, dim=0).squeeze().numpy()
+    test_targets_concat = torch.cat(test_targets, dim=0).squeeze().numpy()
+    test_preds_orig = invert_y_norm(test_preds_concat, stats)
+    test_targets_orig = invert_y_norm(test_targets_concat, stats)
+
+    ss_res_test = np.sum((test_targets_orig - test_preds_orig) ** 2)
+    ss_tot_test = np.sum((test_targets_orig - np.mean(test_targets_orig)) ** 2)
+    test_r2 = 1 - (ss_res_test / ss_tot_test) if ss_tot_test > 0 else 0.0
+
+    print(f"Test RMSE (normalized target units): {test_rmse:.5f}")
+    print(f"Validation R²: {val_r2:.5f}")
+    print(f"Test R²: {test_r2:.5f}")
+
+    return model.cpu(), stats, (val_mse_final, val_r2, test_mse, test_r2)
 
 
 # ----------------------------------------------------------------------

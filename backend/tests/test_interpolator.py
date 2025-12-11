@@ -90,7 +90,7 @@ class TestTrainModel:
         """Test training on small dataset"""
         X, y = synthetic_5d(n=200, seed=42)
 
-        model, stats, (val_mse, test_mse) = train_model(
+        model, stats, (val_mse, val_r2, test_mse, test_r2) = train_model(
             X, y, batch_size=32, max_epochs=10, patience=5
         )
 
@@ -98,6 +98,8 @@ class TestTrainModel:
         assert isinstance(stats, NormStats)
         assert val_mse > 0
         assert test_mse > 0
+        assert -1.0 <= val_r2 <= 1.0  # R² can be negative for poor models
+        assert -1.0 <= test_r2 <= 1.0
 
     def test_train_model_convergence(self):
         """Test that model can fit simple data"""
@@ -106,13 +108,16 @@ class TestTrainModel:
         X = np.random.randn(500, 5).astype(np.float32)
         y = (X[:, 0] + X[:, 1]).astype(np.float32)
 
-        model, stats, (val_mse, test_mse) = train_model(
+        model, stats, (val_mse, val_r2, test_mse, test_r2) = train_model(
             X, y, batch_size=64, max_epochs=50, patience=10
         )
 
         # Should achieve reasonable MSE on this simple problem
         assert val_mse < 1.0
         assert test_mse < 1.0
+        # R² should be positive for a model that can fit linear data
+        assert val_r2 > 0.5
+        assert test_r2 > 0.5
 
 
 class TestInterpolate:
