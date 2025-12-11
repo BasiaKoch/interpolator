@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Performance Benchmark for C1 Coursework.
+Performance Benchmark 
 Measures:
 - Training time (1K, 5K, 10K samples)
 - Memory usage during training & prediction

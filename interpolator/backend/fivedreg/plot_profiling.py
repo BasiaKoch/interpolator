@@ -14,7 +14,7 @@ def load_profiling_results():
     """Load profiling results from JSON."""
     path = os.path.join(os.path.dirname(__file__), "profiling_results.json")
     if not os.path.exists(path):
-        print(f"❌ Profiling results not found at {path}")
+        print(f"Profiling results not found at {path}")
         print("   Run 'python -m fivedreg.profile_training' first!")
         return None
 
@@ -48,7 +48,7 @@ def plot_operation_times(stats, output_path):
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"✅ Saved operation times plot: {output_path}")
+    print(f"Saved operation times plot: {output_path}")
     plt.close()
 
 
@@ -89,7 +89,7 @@ def plot_time_breakdown(stats, output_path):
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"✅ Saved time breakdown plot: {output_path}")
+    print(f" Saved time breakdown plot: {output_path}")
     plt.close()
 
 
@@ -98,7 +98,7 @@ def plot_flops_comparison(stats, output_path):
     operations = [op for op in stats["operations"] if op["flops"] > 0][:8]
 
     if not operations:
-        print("⚠️  No FLOPs data available, skipping FLOPs plot")
+        print(" No FLOPs data available, skipping FLOPs plot")
         return
 
     op_names = [op["name"][:30] for op in operations]
@@ -122,7 +122,7 @@ def plot_flops_comparison(stats, output_path):
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"✅ Saved FLOPs plot: {output_path}")
+    print(f"Saved FLOPs plot: {output_path}")
     plt.close()
 
 
@@ -190,7 +190,7 @@ def plot_bottleneck_summary(stats, bottlenecks, output_path):
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"✅ Saved bottleneck summary: {output_path}")
+    print(f"Saved bottleneck summary: {output_path}")
     plt.close()
 
 
@@ -232,7 +232,7 @@ def main():
     )
 
     print("\n" + "="*60)
-    print("✅ ALL PLOTS GENERATED")
+    print(" ALL PLOTS GENERATED")
     print("="*60)
     print(f"\nPlots saved to: {output_dir}/")
     print("Files:")
