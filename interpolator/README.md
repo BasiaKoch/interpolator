@@ -158,11 +158,11 @@ The easiest way to get started is using the automated launch script:
 ```bash
 # Clone the repository (SSH)
 git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
-cd bk489
+cd bk489/C1_coursework/interpolator
 
 # OR clone with HTTPS
 # git clone https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/assessments/c1_coursework/bk489.git
-# cd bk489
+# cd bk489/C1_coursework/interpolator
 
 # Launch the application
 ./launch.sh
@@ -229,6 +229,7 @@ docker ps
 
 1. **Navigate to backend directory:**
 ```bash
+# From the interpolator directory:
 cd backend
 ```
 
@@ -240,15 +241,23 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 3. **Install dependencies:**
 ```bash
+# Install core dependencies (FastAPI, PyTorch, etc.)
 pip install -e .
-```
 
-4. **Install development dependencies (for testing):**
-```bash
+# Install development dependencies (pytest, ruff, mypy)
 pip install -e ".[dev]"
+
+# Install documentation dependencies (Sphinx)
+pip install -e ".[docs]"
+
+# Install profiling dependencies (memory-profiler, psutil)
+pip install -e ".[bench]"
+
+# Or install everything at once:
+pip install -e ".[dev,docs,bench]"
 ```
 
-5. **Start backend server:**
+4. **Start backend server:**
 ```bash
 uvicorn fivedreg.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -598,39 +607,91 @@ pytest tests/ --cov=fivedreg --cov-report=html
 
 ---
 
+## Documentation
+
+### Building Sphinx Documentation
+
+The project includes comprehensive Sphinx documentation covering API reference, usage examples, testing, and deployment.
+
+**Install documentation dependencies:**
+```bash
+cd backend
+source .venv/bin/activate
+pip install -e ".[docs]"
+```
+
+**Build the documentation:**
+```bash
+cd docs
+./build_docs.sh
+
+# Or manually:
+make html
+```
+
+**View the documentation:**
+```bash
+# Option 1: Open directly in browser (macOS)
+open build/html/index.html
+
+# Option 2: Start a local web server
+cd build/html
+python -m http.server 8080
+# Then visit: http://localhost:8080
+
+# Option 3: File path
+# Navigate to: backend/docs/build/html/index.html
+```
+
+**Documentation includes:**
+- **API Reference**: Complete API endpoint documentation
+- **Usage Guide**: How to use the package programmatically
+- **Testing**: Test suite documentation and how to run tests
+- **Deployment**: Production deployment guide
+- **Performance**: Profiling and optimization details
+
+---
+
 ## Project Structure
 
 ```
-C1_coursework/
-├── backend/                  # Python FastAPI backend
-│   ├── fivedreg/            # Main package
-│   │   ├── api/             # API state management
-│   │   ├── data/            # Data loading utilities
-│   │   ├── models/          # PyTorch MLP model
-│   │   ├── utils/           # Training utilities
-│   │   └── main.py          # FastAPI application
-│   ├── tests/               # Backend tests (60 tests)
-│   ├── Dockerfile           # Backend container definition
-│   └── pyproject.toml       # Python dependencies
-│
-├── frontend/                 # Next.js frontend
-│   ├── src/
-│   │   ├── app/             # Next.js 16 app directory
-│   │   │   ├── upload/      # Upload page
-│   │   │   ├── train/       # Training page
-│   │   │   ├── predict/     # Prediction page
-│   │   │   ├── layout.tsx   # Root layout
-│   │   │   ├── page.tsx     # Home page
-│   │   │   └── globals.css  # Global styles
-│   │   └── lib/
-│   │       └── api.ts       # API client
-│   ├── Dockerfile           # Frontend container definition
-│   ├── package.json         # Node dependencies
-│   └── tsconfig.json        # TypeScript config
-│
-├── docker-compose.yml        # Multi-container orchestration
-├── .gitignore               # Git ignore rules
-└── README.md                # This file
+bk489/
+└── C1_coursework/
+    └── interpolator/         # Main project directory
+        ├── backend/          # Python FastAPI backend
+        │   ├── fivedreg/     # Main package
+        │   │   ├── api/      # API state management
+        │   │   ├── data/     # Data loading utilities
+        │   │   └── main.py   # FastAPI application
+        │   ├── docs/         # Sphinx documentation
+        │   │   ├── source/   # Documentation source files
+        │   │   └── build/    # Built HTML documentation
+        │   ├── tests/        # Backend tests (42 tests)
+        │   ├── Dockerfile    # Backend container definition
+        │   └── pyproject.toml # Python dependencies & project config
+        │
+        ├── frontend/         # Next.js frontend
+        │   ├── src/
+        │   │   ├── app/      # Next.js 16 app directory
+        │   │   │   ├── upload/   # Upload page
+        │   │   │   ├── train/    # Training page
+        │   │   │   ├── predict/  # Prediction page
+        │   │   │   ├── layout.tsx # Root layout
+        │   │   │   └── page.tsx   # Home page
+        │   │   └── lib/
+        │   │       └── api.ts     # API client
+        │   ├── Dockerfile    # Frontend container definition
+        │   └── package.json  # Node dependencies
+        │
+        ├── scripts/          # Utility scripts
+        │   ├── build-docs.sh        # Build documentation
+        │   ├── run-profiling.sh     # Performance profiling
+        │   └── test-pipeline.sh     # Test automation
+        │
+        ├── docker-compose.yml       # Multi-container orchestration
+        ├── launch.sh               # Automated startup script
+        ├── README.md               # This file
+        └── sample_dataset.pkl      # Example dataset for testing
 ```
 
 ---
