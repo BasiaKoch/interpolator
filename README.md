@@ -1,6 +1,6 @@
 # 5D Dataset Interpolator
 
-Welcome! This is a full-stack machine learning application for training neural network models on 5-dimensional datasets and making predictions through an intuitive web interface. This repo has been designed for the coursework assigment of the Research Comuting class at University of Cambridge.
+Welcome! This is a full-stack machine learning application for training neural network models on 5-dimensional datasets and making predictions through an intuitive web interface. This repo has been designed for the Research Comuting class at University of Cambridge.
 
 ##  Table of Contents
 
